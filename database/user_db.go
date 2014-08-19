@@ -82,7 +82,8 @@ func (db *DB) NewAccount(r *user.NewAccountRequest) (*user.Account, error) {
 		return nil, fmt.Errorf("Invalid username.")
 	}
 
-	_, err := db.db.Exec("insert into users values (?,?,?,?,?)", string(r.Name), string(r.MainLanguage), true, r.Email, r.PasswordHash)
+	_, err := db.db.Exec("insert into users values (?,?,?,?,?)",
+		string(r.Name), string(r.MainLanguage), true, r.Email, r.PasswordHash)
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +116,12 @@ func (db *DB) GetAccountByEmail(email string) (*user.Account, error) {
 	default:
 		return a, nil
 	}
+}
+
+func (db *DB) UpdateAccount(a *user.Account) error {
+	_, err := db.db.Exec("update users set mainlanguage=?, active=?, email=?, pwhash=? where id=?",
+		string(a.MainLanguage), a.Active, a.Email, a.PasswordHash, string(a.Name))
+	return err
 }
 
 type Scanner interface {
