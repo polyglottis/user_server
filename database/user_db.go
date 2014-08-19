@@ -41,43 +41,45 @@ func Open(file string) (*DB, error) {
 			Field: "pwhash",
 			Type:  "blob",
 		}},
+	}, {
+		Name: "tokens",
+		Columns: database.Columns{{
+			Field:      "id",
+			Type:       "text",
+			Constraint: "not null",
+		}, {
+			Field: "token",
+			Type:  "text",
+		}, {
+			Field: "creation",
+			Type:  "integer",
+		}, {
+			Field: "expiration",
+			Type:  "integer",
+		}},
+		PrimaryKey: []string{"id", "token"},
 	}})
 	if err != nil {
 		return nil, err
 	}
 
-	return &DB{
+	newDB := &DB{
 		db: userDB,
-	}, nil
+	}
+	newDB.deleteTokensPeriodically()
+	return newDB, nil
 }
 
 func (db *DB) Close() error {
 	return db.db.Close()
 }
 
-func (db *DB) createTableIfNotExist() error {
-
-	count, err := db.db.QueryInt("SELECT count(1) FROM sqlite_master WHERE type=? AND name=?", "table", "users")
-	if err != nil {
-		return err
-	}
-
-	if count == 0 {
-		_, err := db.db.Exec("create table users (id text primary key not null, mainlanguage text, active boolean, email text, pwhash blob)")
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (db *DB) NewAccount(r *user.NewAccountRequest) (*user.Account, error) {
 	if r == nil {
 		return nil, fmt.Errorf("NewAccountRequest should not be nil")
 	}
-	if len(r.Name) == 0 {
-		return nil, fmt.Errorf("Account name cannot be empty")
+	if valid, _ := user.ValidName(string(r.Name)); !valid {
+		return nil, fmt.Errorf("Invalid username.")
 	}
 
 	_, err := db.db.Exec("insert into users values (?,?,?,?,?)", string(r.Name), string(r.MainLanguage), true, r.Email, r.PasswordHash)
