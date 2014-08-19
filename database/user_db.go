@@ -90,6 +90,21 @@ func (db *DB) NewAccount(r *user.NewAccountRequest) (*user.Account, error) {
 
 func (db *DB) GetAccount(name user.Name) (*user.Account, error) {
 	a, err := db.scanAccount(db.db.QueryRow("select * from users where id=?", string(name)))
+	if err == sql.ErrNoRows {
+		a, err = db.GetAccountByEmail(string(name))
+	}
+	switch {
+	case err == sql.ErrNoRows:
+		return nil, user.AccountNotFound
+	case err != nil:
+		return nil, err
+	default:
+		return a, nil
+	}
+}
+
+func (db *DB) GetAccountByEmail(email string) (*user.Account, error) {
+	a, err := db.scanAccount(db.db.QueryRow("select * from users where email=?", email))
 	switch {
 	case err == sql.ErrNoRows:
 		return nil, user.AccountNotFound
