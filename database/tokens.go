@@ -64,12 +64,10 @@ func (db *DB) DeleteExpiredTokens() error {
 }
 
 func (db *DB) deleteTokensPeriodically() {
-	go func() {
-		for _ = range time.Tick(24 * time.Hour) {
-			err := db.DeleteExpiredTokens()
-			if err != nil {
-				log.Println("Unable to delete expired tokens:", err)
-			}
+	for _ = range time.Tick(time.Hour) {
+		err := db.DeleteExpiredTokens()
+		if err != nil {
+			log.Println("Unable to delete expired tokens:", err)
 		}
-	}()
+	}
 }

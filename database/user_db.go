@@ -66,7 +66,7 @@ func Open(file string) (*DB, error) {
 	newDB := &DB{
 		db: userDB,
 	}
-	newDB.deleteTokensPeriodically()
+	go newDB.deleteTokensPeriodically()
 	return newDB, nil
 }
 
