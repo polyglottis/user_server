@@ -53,7 +53,7 @@ func TestDeleteExpiredTokens(t *testing.T) {
 		t.Fatal("Token should be valid")
 	}
 
-	time.Sleep(1*time.Second + 500*time.Millisecond)
+	time.Sleep(2 * time.Second)
 
 	valid, err = db.ValidToken(n, token)
 	if err != nil {

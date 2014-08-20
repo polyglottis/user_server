@@ -29,6 +29,9 @@ func Open(file string) (*DB, error) {
 			Type:       "text",
 			Constraint: "primary key not null",
 		}, {
+			Field: "locale",
+			Type:  "text",
+		}, {
 			Field: "mainlanguage",
 			Type:  "text",
 		}, {
@@ -82,8 +85,8 @@ func (db *DB) NewAccount(r *user.NewAccountRequest) (*user.Account, error) {
 		return nil, fmt.Errorf("Invalid username.")
 	}
 
-	_, err := db.db.Exec("insert into users values (?,?,?,?,?)",
-		string(r.Name), string(r.MainLanguage), true, r.Email, r.PasswordHash)
+	_, err := db.db.Exec("insert into users values (?,?,?,?,?,?)",
+		string(r.Name), r.UILocale, "", true, r.Email, r.PasswordHash)
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +122,8 @@ func (db *DB) GetAccountByEmail(email string) (*user.Account, error) {
 }
 
 func (db *DB) UpdateAccount(a *user.Account) error {
-	_, err := db.db.Exec("update users set mainlanguage=?, active=?, email=?, pwhash=? where id=?",
-		string(a.MainLanguage), a.Active, a.Email, a.PasswordHash, string(a.Name))
+	_, err := db.db.Exec("update users set locale=?, mainlanguage=?, active=?, email=?, pwhash=? where id=?",
+		a.UILocale, string(a.MainLanguage), a.Active, a.Email, a.PasswordHash, string(a.Name))
 	return err
 }
 
@@ -131,7 +134,7 @@ type Scanner interface {
 func (db *DB) scanAccount(s Scanner) (*user.Account, error) {
 	a := new(user.Account)
 	var uName, lang string
-	err := s.Scan(&uName, &lang, &a.Active, &a.Email, &a.PasswordHash)
+	err := s.Scan(&uName, &a.UILocale, &lang, &a.Active, &a.Email, &a.PasswordHash)
 	if err != nil {
 		return nil, err
 	}
