@@ -4,7 +4,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/polyglottis/platform/language"
 	"github.com/polyglottis/platform/user"
 	"github.com/polyglottis/user_server/database"
 )
@@ -13,7 +12,7 @@ var file = "user_test.db"
 var testAddr = ":1234"
 var testAccount = &user.NewAccountRequest{
 	Name:         "testUser",
-	MainLanguage: language.English.Code,
+	UILocale:     "en-us",
 	Email:        "test@test.com",
 	PasswordHash: []byte("testPW"),
 }
